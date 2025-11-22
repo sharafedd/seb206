@@ -1,0 +1,14 @@
+[
+  {
+    "dyad": "USA-RUS",
+    "goldstein_history": [-2.1, -1.8, -3.0, -4.2],
+    "goldstein_pred": -3.7,
+    "quadclass": [10, 4, 30, 22]
+  },
+  {
+    "dyad": "USA-CHN",
+    "goldstein_history": [1.2, 1.5, 1.0, 0.8],
+    "goldstein_pred": 0.9,
+    "quadclass": [30, 14, 6, 2]
+  }
+]
