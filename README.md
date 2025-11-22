@@ -44,17 +44,13 @@ cd seb206
 
 ```plaintext
 seb206/
-├── src/
-│   ├── etl/                      # Data extraction, cleaning, graph building
-│   ├── baselines/                # All baseline models
-│   ├── models/                   # Echo components and architecture
-│   ├── training/                 # Training loops and ablation scripts
-│   ├── evaluation/               # Metrics, analysis, and plots
-│   └── utils/                    # Helpers and configs
-├── data/                         # Raw, interim, processed datasets
-├── experiments/                  # Results from all runs
-├── notebooks/                    # Exploration and visualisation
-├── reports/                      # Proposal and final report
-├── docs/                         # Documentation and diagrams
-├── requirements.txt              # Dependencies
-└── README.md
+├── dashboard/       # Next.js dashboard (UI + visualisation)
+├── data/            # Raw, interim, and processed datasets
+├── docs/            # Documentation and diagrams
+├── experiments/     # Results from model runs and ablations
+├── notebooks/       # Jupyter notebooks for exploration
+├── reports/         # Proposal and final report
+├── src/             # Main Python source code (ETL, models, training)
+├── requirements.txt # Python dependencies
+├── environment.yml  # Conda environment definition
+└── README.md        # Project overview and instructions

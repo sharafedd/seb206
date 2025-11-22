@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import GoldsteinChart from "../components/GoldsteinChart";
+import dynamic from "next/dynamic";
+
+// Dynamically import browser-only components (no SSR)
+const CountryGraph = dynamic(
+  () => import("../components/CountryGraph"),
+  { ssr: false }
+);
+
+const GoldsteinChart = dynamic(
+  () => import("../components/GoldsteinChart"),
+  { ssr: false }
+);
 
 type Dyad = {
   dyad: string;
@@ -23,13 +34,22 @@ export default function Home() {
     <main className="p-10">
       <h1 className="text-3xl font-bold mb-6">Echo Dashboard MVP</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Global graph */}
+      <section className="mb-10">
+        <h2 className="text-2xl font-semibold mb-4">
+          Global Relationship Graph
+        </h2>
+        <CountryGraph />
+      </section>
+
+      {/* Dyad cards */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {dyads.map((d) => (
           <div
             key={d.dyad}
             className="p-4 border rounded-lg shadow bg-white dark:bg-gray-900"
           >
-            {/* Dyad Title */}
+            {/* Dyad title */}
             <h2 className="text-xl font-semibold">{d.dyad}</h2>
 
             {/* Predicted Goldstein */}
@@ -37,11 +57,11 @@ export default function Home() {
               <strong>Predicted Goldstein:</strong> {d.goldstein_pred}
             </p>
 
-            {/* Goldstein History + Chart */}
+            {/* Goldstein history chart */}
             <h3 className="mt-3 font-semibold">Goldstein History</h3>
             <GoldsteinChart history={d.goldstein_history} />
 
-            {/* QuadClass */}
+            {/* QuadClass distribution */}
             <h3 className="mt-3 font-semibold">QuadClass Distribution</h3>
             <ul className="text-sm text-gray-700 dark:text-gray-300">
               <li>Verbal Cooperation: {d.quadclass[0]}</li>
@@ -51,7 +71,7 @@ export default function Home() {
             </ul>
           </div>
         ))}
-      </div>
+      </section>
     </main>
   );
 }

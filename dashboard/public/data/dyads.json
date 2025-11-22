@@ -10,5 +10,11 @@
     "goldstein_history": [1.2, 1.5, 1.0, 0.8],
     "goldstein_pred": 0.9,
     "quadclass": [30, 14, 6, 2]
+  },
+  {
+    "dyad": "FRA-DEU",
+    "goldstein_history": [3.5, 3.8, 4.0, 4.2],
+    "goldstein_pred": 4.1,
+    "quadclass": [40, 25, 3, 1]
   }
 ]

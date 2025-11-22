@@ -1,0 +1,17 @@
+{
+  "nodes": [
+    { "id": "USA", "label": "USA" },
+    { "id": "CHN", "label": "China" },
+    { "id": "RUS", "label": "Russia" },
+    { "id": "FRA", "label": "France" },
+    { "id": "DEU", "label": "Germany" }
+  ],
+  "edges": [
+    { "source": "USA", "target": "RUS", "goldstein": -3.7 },
+    { "source": "USA", "target": "CHN", "goldstein": -2.3 },
+    { "source": "USA", "target": "FRA", "goldstein": 3.0 },
+    { "source": "USA", "target": "DEU", "goldstein": 2.5 },
+    { "source": "FRA", "target": "DEU", "goldstein": 4.1 },
+    { "source": "CHN", "target": "RUS", "goldstein": 4.0 }
+  ]
+}
