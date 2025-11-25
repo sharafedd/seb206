@@ -1,63 +1,87 @@
-import pandas as pd
-import numpy as np
+# Data preprocessing module for ETL pipeline:
+# 1. Rank top 10 countries by event count
+# 2. Filter events for these countries
+# 3. Create dyad column
+# 4. Convert SQLDATE to datetime
+# 5. Resample to weekly frequency with mean GSS and QC distribution
+# 6. Save to data/processed/<dyad_name>.csv
+
 import os
+import pandas as pd
 
-def clean_and_aggregate(path_in, path_out):
-    # Load raw dyad data
-    df = pd.read_csv(path_in)
+RAW_PATH = "../data/raw/gdelt_events.csv"
+PROCESSED_PATH = "../data/processed/"
 
-    # Remove invalid Goldstein rows
-    df = df.dropna(subset=["GoldsteinScale"])
-    df = df[df["GoldsteinScale"].between(-10, 10)]
+def preprocess():
+    print()
+    os.makedirs(PROCESSED_PATH, exist_ok=True)
 
-    # Convert SQLDATE to proper timestamp
+    # Load raw data
+    df = pd.read_csv(RAW_PATH)
     df["date"] = pd.to_datetime(df["SQLDATE"], format="%Y%m%d")
-    df = df.sort_values("date")
+    print(f"[INFO] Loaded {len(df)} events from {RAW_PATH}")
 
-    # Weekly mean Goldstein score
-    weekly = (
-        df.groupby(pd.Grouper(key="date", freq="W"))["GoldsteinScale"]
-        .mean()
-        .reset_index()
-        .rename(columns={"GoldsteinScale": "goldstein"})
+    # Rank countries by event count
+    counts = (
+        pd.concat([df["Actor1"], df["Actor2"]])
+        .value_counts()
+        .head(10)
     )
+    top10 = counts.index.tolist()
+    print("[INFO] Top 10 countries by event count:", top10)
 
-    # Create continuous weekly index
-    full_range = pd.date_range(weekly["date"].min(),
-                               weekly["date"].max(),
-                               freq="W")
+    # Filter only top 10 countries events
+    df = df[
+        df["Actor1"].isin(top10) &
+        df["Actor2"].isin(top10)
+    ]
+    print(f"[INFO] Filtered to {len(df)} events involving top 10 countries")
 
-    weekly = (
-        weekly.set_index("date")
-        .reindex(full_range)
+    # Create dyad column
+    df["dyad"] = df.apply(
+        lambda row: "-".join(sorted([row["Actor1"], row["Actor2"]])),
+        axis=1
     )
-    weekly.index.name = "week"
+    print(f"[INFO] Created dyad column with {df['dyad'].nunique()} unique dyads")
 
-    # Fill missing weeks (forward then backward)
-    weekly["goldstein"] = weekly["goldstein"].ffill().bfill()
+    # Group by dyad and resample weekly
+    for dyad, d in df.groupby("dyad"):
+        d = d.sort_values("date").set_index("date")
 
-    # Save
-    os.makedirs(os.path.dirname(path_out), exist_ok=True)
-    weekly.to_csv(path_out)
+        # Weekly mean Goldstein score
+        gss_weekly = d["GoldsteinScale"].resample("W-SUN").mean()
 
-    print(f"[OK] Processed {path_out} ({len(weekly)} weeks)")
+        # QUADCLASS DISTRIBUTION
+        weekly_groups = d["QuadClass"].resample("W-SUN")
 
+        qc_list = []
+        week_list = []
+
+        for week, series in weekly_groups:
+            counts = series.value_counts(normalize=True)
+            counts = counts.reindex([1, 2, 3, 4], fill_value=0)  # ensure all 4 classes
+            qc_list.append(counts)
+            week_list.append(week)
+
+        qc_distribution = pd.DataFrame(qc_list, index=week_list)
+        qc_distribution.index.name = "week"
+        qc_distribution.columns = ["QuadClass_1", "QuadClass_2", "QuadClass_3", "QuadClass_4"]
+
+        out = pd.concat(
+            [
+                gss_weekly.rename("GoldsteinScale"),
+                qc_distribution
+            ],
+            axis=1
+        )
+
+        out.index.name = "week"
+        out.reset_index(inplace=True)
+
+        # Save to CSV
+        out_path = os.path.join(PROCESSED_PATH, f"{dyad.lower()}.csv")
+        out.to_csv(out_path, index=False)
+        print(f"[OK] Saved processed dyad {dyad} to {out_path}")
 
 if __name__ == "__main__":
-    raw_folder = "../data/raw/dyads/"
-    out_folder = "../data/processed/weekly_series/"
-
-    os.makedirs(out_folder, exist_ok=True)
-
-    for file in os.listdir(raw_folder):
-        if file.endswith(".csv"):
-            input_path = os.path.join(raw_folder, file)
-
-            # Remove "_raw" and force lowercase + .csv
-            base_name = file.replace("_raw", "").lower()
-            if not base_name.endswith(".csv"):
-                base_name += ".csv"
-
-            output_path = os.path.join(out_folder, base_name)
-
-            clean_and_aggregate(input_path, output_path)
+    preprocess()
