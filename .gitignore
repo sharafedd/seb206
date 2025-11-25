@@ -3,3 +3,9 @@ credentials/
 
 # Data folder
 data/
+
+# Python cache files
+**/__pycache__/
+
+# Jupyter Notebook checkpoints
+**/.ipynb_checkpoints/
