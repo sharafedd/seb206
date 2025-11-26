@@ -1,7 +1,7 @@
-export default function DashboardPage() {
+export default function TechnologyPage() {
   return (
     <div className="page">
-      <h1>Dashboard</h1>
+      <h1>Technology</h1>
       <p>This page is empty for now.</p>
     </div>
   );
